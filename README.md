@@ -66,6 +66,24 @@ All values are in **SVG user units** (px in a normal document), measured in
 document coordinates with each object's transforms applied. **Scope** can be
 limited to the current selection instead of the whole document.
 
+### Compound paths (traced / laser / stencil art)
+
+Vectorised artwork is usually a **single compound path** with hundreds of
+subpaths — the specks are *subpaths*, not separate objects, so an
+element-level tool sees nothing to remove. **Despeckle inside compound
+paths** (on by default) measures every subpath of a multi-subpath path
+individually:
+
+- **Delete** rebuilds the path keeping only subpaths above the threshold
+  (removing a tiny "island" deletes a speck; removing a tiny "hole" fills a
+  pinhole/sliver — both are what despeckling wants).
+- **Highlight** adds a magenta `despeckle-preview` overlay path of the
+  matching subpaths, so Live preview still works while you tune the slider.
+
+For the hairline slivers typical of traced art, prefer the **Geometric /
+filled area** metric: a collapsed sliver has a sizeable bounding box but
+almost zero area, so only that metric reliably catches it.
+
 ## Development
 
 ```bash

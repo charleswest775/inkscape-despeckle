@@ -31,7 +31,12 @@
   <param name="include_text" type="bool"
          gui-text="Also include text objects">false</param>
 
-  <param name="info" type="description" xml:space="preserve">Workflow: tick the "Live preview" box below, then drag the Threshold slider — matching objects update on the canvas in real time. Preview with Highlight, then switch Action to Delete and click Apply to remove them.</param>
+  <param name="subpaths" type="bool"
+         gui-text="Despeckle inside compound paths (per-subpath)">true</param>
+
+  <param name="info" type="description" xml:space="preserve">Workflow: tick the "Live preview" box below, then drag the Threshold slider — matching objects update on the canvas in real time. Preview with Highlight, then switch Action to Delete and click Apply to remove them.
+
+Traced / laser / stencil art is usually ONE compound path; with the option above on, each tiny subpath (sliver/island) is measured and removed individually. Tip: for thin slivers use the "Geometric / filled area" metric — they have almost no area but a large bounding box.</param>
 
   <effect needs-live-preview="true">
     <object-type>all</object-type>

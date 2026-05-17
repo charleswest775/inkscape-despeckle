@@ -90,3 +90,57 @@ def test_scope_selection_with_nothing_selected_falls_back(tmp_path):
     )
     assert 'id="tiny"' not in result
     assert 'id="big"' in result
+
+
+# --- compound-path (subpath) despeckling --------------------------------
+
+import re  # noqa: E402
+import xml.etree.ElementTree as ET  # noqa: E402
+
+# One path, three subpaths: big 200x200 (area 40000), 3x3 (area 9), 1x1 (1).
+COMPOUND = """<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"
+viewBox="0 0 500 500">
+  <path id="cmp" d="M 0,0 H 200 V 200 H 0 Z M 10,10 h 3 v 3 h -3 z
+M 50,50 h 1 v 1 h -1 z"/>
+</svg>"""
+
+
+def _subpath_count(svg_text, pid):
+    root = ET.fromstring(svg_text)
+    for e in root.iter():
+        if e.tag.split("}")[-1] == "path" and e.get("id") == pid:
+            return len(re.findall(r"[Mm]", e.get("d") or ""))
+    return None
+
+
+def test_subpath_delete_removes_tiny_keeps_big(tmp_path):
+    result = run_ext(
+        tmp_path,
+        ["--mode=delete", "--metric=geom_area", "--threshold=100"],
+        svg=COMPOUND,
+    )
+    assert 'id="cmp"' in result                 # path survives
+    assert _subpath_count(result, "cmp") == 1    # 3 subpaths -> 1 (big kept)
+
+
+def test_subpath_highlight_overlays_without_touching_original(tmp_path):
+    result = run_ext(
+        tmp_path,
+        ["--mode=highlight", "--metric=geom_area", "--threshold=100"],
+        svg=COMPOUND,
+    )
+    assert "despeckle-preview" in result          # overlay added
+    assert "#ff00ff" in result                    # overlay is magenta
+    assert _subpath_count(result, "cmp") == 3     # original untouched
+
+
+def test_subpaths_disabled_treats_path_as_one_element(tmp_path):
+    # With subpaths off, the whole compound path is a single element:
+    # a threshold above its total area deletes the entire path.
+    result = run_ext(
+        tmp_path,
+        ["--mode=delete", "--metric=geom_area", "--threshold=100000",
+         "--subpaths=false"],
+        svg=COMPOUND,
+    )
+    assert 'id="cmp"' not in result
