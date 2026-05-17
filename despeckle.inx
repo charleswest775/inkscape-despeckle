@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name>Despeckle (Small Object Remover)</name>
+  <id>io.github.charleswest775.despeckle</id>
+
+  <param name="metric" type="optiongroup" appearance="combo"
+         gui-text="Measure size by:">
+    <option value="bbox_area">Bounding-box area (px²)</option>
+    <option value="max_dim">Largest dimension (px)</option>
+    <option value="geom_area">Geometric / filled area (px²)</option>
+    <option value="path_length">Path / line length (px)</option>
+  </param>
+
+  <param name="threshold" type="float" precision="1" min="0" max="5000"
+         appearance="full"
+         gui-text="Threshold — objects this size or smaller match:">25</param>
+
+  <param name="mode" type="optiongroup" appearance="combo" gui-text="Action:">
+    <option value="highlight">Highlight matches (recolor)</option>
+    <option value="delete">Delete matches</option>
+  </param>
+
+  <param name="scope" type="optiongroup" appearance="combo" gui-text="Scope:">
+    <option value="all">Whole document</option>
+    <option value="selection">Current selection only</option>
+  </param>
+
+  <param name="highlight_color" type="string"
+         gui-text="Highlight color (CSS hex):">#ff00ff</param>
+
+  <param name="include_text" type="bool"
+         gui-text="Also include text objects">false</param>
+
+  <param name="info" type="description" xml:space="preserve">Workflow: tick the "Live preview" box below, then drag the Threshold slider — matching objects update on the canvas in real time. Preview with Highlight, then switch Action to Delete and click Apply to remove them.</param>
+
+  <effect needs-live-preview="true">
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu name="Cleanup"/>
+    </effects-menu>
+    <menu-tip>Find and remove small lines, shapes and polygons below a size threshold.</menu-tip>
+  </effect>
+
+  <script>
+    <command location="inx" interpreter="python">despeckle.py</command>
+  </script>
+</inkscape-extension>
