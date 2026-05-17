@@ -52,6 +52,37 @@ class Despeckle(inkex.EffectExtension):
         except Exception:
             return None
 
+    @staticmethod
+    def _csp_length(csp, steps=16):
+        """Total outline length of a cubic superpath.
+
+        Computed by flattening each Bezier segment ourselves rather than via
+        inkex.bezier.csplength: that helper's result varies with the
+        inkex/numpy versions present, which made the metric non-deterministic
+        across the CI matrix. Pure arithmetic here is stable everywhere.
+        """
+        total = 0.0
+        for sub in csp:
+            for i in range(1, len(sub)):
+                p0, p1 = sub[i - 1][1], sub[i - 1][2]
+                p2, p3 = sub[i][0], sub[i][1]
+                prev = p0
+                for s in range(1, steps + 1):
+                    t = s / steps
+                    mt = 1.0 - t
+                    a = mt * mt * mt
+                    b = 3 * mt * mt * t
+                    c = 3 * mt * t * t
+                    d = t * t * t
+                    cur = (
+                        a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0],
+                        a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1],
+                    )
+                    total += ((cur[0] - prev[0]) ** 2
+                              + (cur[1] - prev[1]) ** 2) ** 0.5
+                    prev = cur
+        return total
+
     def measure(self, elem):
         """Return the element's size under the chosen metric, or None."""
         metric = self.options.metric
@@ -70,11 +101,7 @@ class Despeckle(inkex.EffectExtension):
         if metric == "geom_area":
             return abs(bezier.csparea(csp))
         if metric == "path_length":
-            result = bezier.csplength(csp)
-            # inkex.bezier.csplength returns (per-subpath lengths, total);
-            # the grand total is the last element. Older/standalone builds
-            # may instead return a bare float.
-            return float(result[-1]) if isinstance(result, (list, tuple)) else float(result)
+            return self._csp_length(csp)
         return None
 
     # --- traversal ----------------------------------------------------------
