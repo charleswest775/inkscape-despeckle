@@ -69,7 +69,8 @@ limited to the current selection instead of the whole document.
 ## Development
 
 ```bash
-python3 -m pip install inkex numpy pytest
+python3 -m pip install --no-deps "inkex==1.4.1"
+python3 -m pip install lxml cssselect numpy tinycss2 pytest
 python3 -m pytest
 ```
 

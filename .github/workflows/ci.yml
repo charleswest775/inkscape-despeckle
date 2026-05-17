@@ -22,14 +22,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        # inkex is pinned: unpinned, pip resolves a newer release on Linux
-        # that drags in PyGObject (a GUI lib this extension never uses) and
-        # fails to build without system cairo/girepository. 1.0.1 needs only
-        # lxml and exercises the same stable inkex API we rely on. At runtime
-        # the extension uses whatever inkex ships inside the user's Inkscape.
+        # inkex 1.4.1 matches modern Inkscape and is correct under numpy 2.x
+        # (1.0.1 is not). It is installed --no-deps because its declared deps
+        # include PyGObject, a GUI library this extension never uses and which
+        # has no Linux wheel (building it needs system cairo/girepository).
+        # We add only the libraries inkex's import chain and our code actually
+        # touch. At runtime the extension uses Inkscape's bundled inkex.
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "inkex==1.0.1" numpy pytest
+          python -m pip install --no-deps "inkex==1.4.1"
+          python -m pip install lxml cssselect numpy tinycss2 pytest
 
       - name: Validate INX is well-formed XML
         run: python -c "import xml.etree.ElementTree as ET; ET.parse('despeckle.inx')"
