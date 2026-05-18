@@ -197,8 +197,6 @@ class Despeckle(inkex.EffectExtension):
 
         matched = []          # whole-element matches
         overlay_subs = []     # document-coord subpaths to preview (highlight)
-        removed_subs = 0      # tiny subpaths inside compound paths
-        compound_hits = 0     # compound paths that had something removed
 
         for elem in self._candidates():
             if not isinstance(elem, types):
@@ -221,8 +219,6 @@ class Despeckle(inkex.EffectExtension):
                         else:
                             keep.append(local_csp[i])
                     if drop_doc:
-                        compound_hits += 1
-                        removed_subs += len(drop_doc)
                         if mode == "delete":
                             if keep:
                                 elem.path = CubicSuperPath(keep).to_path()
@@ -267,15 +263,6 @@ class Despeckle(inkex.EffectExtension):
                     "opacity": "1",
                 })
                 self.svg.add(overlay)
-
-        self.msg(
-            "Despeckle ({metric} <= {thr:g}, action {mode}): "
-            "{ne} object(s) + {ns} subpath(s) across {cp} compound "
-            "path(s).".format(
-                metric=self.options.metric, thr=threshold, mode=mode,
-                ne=len(matched), ns=removed_subs, cp=compound_hits,
-            )
-        )
 
 
 if __name__ == "__main__":
